@@ -4,4 +4,13 @@ body{
 
 #header{
     background-color: mediumseagreen;
+    text-align: center;
+}
+
+#header > h1{
+    color: green;
+}
+
+#header > h1:hover{
+    color: red;
 }
