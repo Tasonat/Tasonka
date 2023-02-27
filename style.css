@@ -11,6 +11,6 @@ body{
     color: green;
 }
 
-#header h1:hover{
+h1:hover{
     color: red;
 }
