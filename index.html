@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top Girls — Skaner Raportów</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #f5c842;
+    --purple: #7c3aed;
+    --purple-light: #a855f7;
+    --purple-dark: #1e0a3c;
+    --bg: #0d0118;
+    --bg2: #160228;
+    --win: #22c55e;
+    --lose: #ef4444;
+    --card: rgba(124,58,237,0.13);
+    --border: rgba(168,85,247,0.3);
+    --text: #e8d5ff;
+    --muted: #9d7fc0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 0%, rgba(124,58,237,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(168,85,247,0.12) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeDown 0.7s ease both;
+  }
+
+  .logo-tag {
+    display: inline-block;
+    background: linear-gradient(90deg, var(--purple), var(--purple-light));
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 2px;
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    font-weight: 700;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #fff 30%, var(--gold) 70%, var(--purple-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 300;
+  }
+
+  /* API KEY SECTION */
+  .api-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .api-section label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+
+  .api-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .api-row input {
+    flex: 1;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .api-row input:focus { border-color: var(--purple-light); }
+
+  .btn-save {
+    background: var(--purple);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-save:hover { background: var(--purple-light); transform: translateY(-1px); }
+
+  .api-hint {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .api-hint a { color: var(--purple-light); text-decoration: none; }
+  .api-hint a:hover { text-decoration: underline; }
+
+  /* UPLOAD ZONE */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.25s, background 0.25s;
+    background: rgba(124,58,237,0.05);
+    position: relative;
+    animation: fadeUp 0.6s 0.2s ease both;
+    margin-bottom: 28px;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--purple-light);
+    background: rgba(124,58,237,0.12);
+  }
+
+  .upload-icon {
+    font-size: 52px;
+    margin-bottom: 14px;
+    display: block;
+    filter: drop-shadow(0 0 12px rgba(168,85,247,0.5));
+  }
+
+  .upload-zone h2 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .upload-zone p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 18px;
+  }
+
+  #fileInput { display: none; }
+
+  .btn-upload {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--purple), var(--purple-light));
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 32px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-upload:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(124,58,237,0.6); }
+
+  /* QUEUE */
+  .queue {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+    min-height: 0;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .queue-item {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .queue-item:hover { border-color: var(--purple-light); }
+  .queue-item img { width: 100%; height: 100%; object-fit: cover; }
+  .queue-item .remove {
+    position: absolute;
+    top: 2px; right: 2px;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+  .queue-item .status-badge {
+    position: absolute;
+    bottom: 2px; left: 2px; right: 2px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 4px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.75);
+  }
+  .status-badge.done { color: var(--win); }
+  .status-badge.error { color: var(--lose); }
+  .status-badge.loading { color: var(--gold); }
+
+  /* ACTIONS BAR */
+  .actions-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.35s ease both;
+  }
+
+  .btn-scan {
+    flex: 1;
+    min-width: 160px;
+    background: linear-gradient(135deg, var(--gold) 0%, #f59e0b 100%);
+    color: #1a0a00;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 28px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(245,200,66,0.35);
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+  }
+  .btn-scan:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(245,200,66,0.55); }
+  .btn-scan:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-csv {
+    background: transparent;
+    color: var(--win);
+    border: 2px solid var(--win);
+    border-radius: 10px;
+    padding: 14px 28px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-csv:hover:not(:disabled) { background: var(--win); color: #000; }
+  .btn-csv:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .btn-clear {
+    background: transparent;
+    color: var(--lose);
+    border: 2px solid rgba(239,68,68,0.4);
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-clear:hover { border-color: var(--lose); }
+
+  /* PROGRESS */
+  .progress-bar-wrap {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    display: none;
+  }
+  .progress-bar-wrap.visible { display: block; }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple), var(--gold));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* RESULTS TABLE */
+  .results-section {
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .results-header h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .results-count {
+    background: var(--purple);
+    color: #fff;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead tr {
+    background: rgba(124,58,237,0.25);
+  }
+
+  thead th {
+    padding: 12px 14px;
+    text-align: left;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--purple-light);
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(124,58,237,0.1);
+    transition: background 0.15s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(124,58,237,0.08); }
+
+  tbody td {
+    padding: 11px 14px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .win-badge {
+    display: inline-block;
+    background: rgba(34,197,94,0.15);
+    color: var(--win);
+    border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .lose-badge {
+    display: inline-block;
+    background: rgba(239,68,68,0.15);
+    color: var(--lose);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--muted);
+  }
+
+  .empty-state .big-icon { font-size: 40px; margin-bottom: 12px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #1a0a2e;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    z-index: 999;
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: rgba(34,197,94,0.5); color: var(--win); }
+  .toast.error { border-color: rgba(239,68,68,0.5); color: var(--lose); }
+  .toast.info { border-color: var(--border); color: var(--gold); }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 600px) {
+    .actions-bar { flex-direction: column; }
+    .btn-scan, .btn-csv, .btn-clear { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-tag">Top Girls · Skaner</div>
+    <h1>Analiza Raportów<br>z Bitew</h1>
+    <p class="subtitle">Wgraj screenshoty → AI wyciąga dane → eksport do CSV</p>
+  </header>
+
+  <!-- BACKEND INFO -->
+  <div class="api-section">
+    <label>⚙️ Serwer API</label>
+    <div class="api-row">
+      <input type="text" id="backendUrl" placeholder="https://twoj-backend.onrender.com" autocomplete="off">
+      <button class="btn-save" onclick="saveBackendUrl()">Zapisz</button>
+    </div>
+    <p class="api-hint">
+      Wpisz adres swojego backendu na Render.com. Klucz API jest bezpiecznie przechowywany na serwerze — znajomi nie muszą nic konfigurować.
+    </p>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+    <span class="upload-icon">🎮</span>
+    <h2>Wgraj screenshoty raportów</h2>
+    <p>Przeciągnij pliki tutaj lub kliknij przycisk poniżej</p>
+    <button class="btn-upload" onclick="event.stopPropagation(); document.getElementById('fileInput').click()">
+      Wybierz pliki
+    </button>
+    <input type="file" id="fileInput" multiple accept="image/*">
+  </div>
+
+  <!-- QUEUE -->
+  <div class="queue" id="queue"></div>
+
+  <!-- ACTIONS -->
+  <div class="actions-bar">
+    <button class="btn-scan" id="btnScan" onclick="scanAll()" disabled>⚡ Skanuj wszystkie</button>
+    <button class="btn-csv" id="btnCsv" onclick="exportCSV()" disabled>📥 Pobierz CSV</button>
+    <button class="btn-clear" onclick="clearAll()">🗑 Wyczyść</button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-bar-wrap" id="progressWrap">
+    <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-section">
+    <div class="results-header">
+      <h3>Wyniki skanowania</h3>
+      <span class="results-count" id="resultsCount">0</span>
+    </div>
+    <div class="table-wrap">
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Plik</th>
+            <th>Wynik</th>
+            <th>Gracz (Win)</th>
+            <th>Poziom</th>
+            <th>Gracz (Lose)</th>
+            <th>Poziom</th>
+            <th>Siła (Win)</th>
+            <th>Siła (Lose)</th>
+            <th>Strata (Win)</th>
+            <th>Strata (Lose)</th>
+            <th>Ranny (Win)</th>
+            <th>Ranny (Lose)</th>
+            <th>Dołącz (Win)</th>
+            <th>Dołącz (Lose)</th>
+            <th>Opuść (Win)</th>
+            <th>Opuść (Lose)</th>
+            <th>Pozostały (Win)</th>
+            <th>Pozostały (Lose)</th>
+            <th>Income Change</th>
+            <th>Atrybut Śpiewaj (Win)</th>
+            <th>Atrybut Śpiewaj (Lose)</th>
+            <th>Atrybut Taniec (Win)</th>
+            <th>Atrybut Taniec (Lose)</th>
+            <th>Aktywna Umiejętność (Win)</th>
+            <th>Aktywna Umiejętność (Lose)</th>
+            <th>Bonus Ataku (Win)</th>
+            <th>Bonus Ataku (Lose)</th>
+            <th>Zmniejsz Obrażenia (Win)</th>
+            <th>Zmniejsz Obrażenia (Lose)</th>
+            <th>Premie Umiejętności (Win)</th>
+            <th>Premie Umiejętności (Lose)</th>
+            <th>Zmniejszenie Umiejętności (Win)</th>
+            <th>Zmniejszenie Umiejętności (Lose)</th>
+            <th>Dodatkowe Obrażenia (Win)</th>
+            <th>Dodatkowe Obrażenia (Lose)</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody">
+          <tr>
+            <td colspan="37">
+              <div class="empty-state">
+                <div class="big-icon">📋</div>
+                <div>Brak wyników — wgraj screenshoty i kliknij Skanuj</div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- DEBUG PANEL -->
+  <div class="results-section" style="margin-top:32px">
+    <div class="results-header">
+      <h3>🔍 Log odpowiedzi API</h3>
+      <button onclick="document.getElementById('debugLog').innerHTML=''" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 12px;cursor:pointer;font-size:12px">Wyczyść</button>
+    </div>
+    <div id="debugLog" style="background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:12px;padding:16px;font-family:monospace;font-size:12px;color:#a0e0a0;max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;">Brak logów — prześlij zdjęcie żeby zobaczyć odpowiedź API...</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const FILES = [];
+  const RESULTS = [];
+
+  // Load saved key
+  window.addEventListener('load', () => {
+    const saved = localStorage.getItem('openrouter_key');
+    if (saved) document.getElementById('apiKey').value = saved;
+  });
+
+  function saveBackendUrl() {
+    const url = document.getElementById('backendUrl').value.trim().replace(/\/+$/, '');
+    if (!url) { showToast('Wpisz adres backendu!', 'error'); return; }
+    localStorage.setItem('backend_url', url);
+    showToast('Adres zapisany ✓', 'success');
+  }
+
+  // Drag & drop
+  const dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    handleFiles(e.dataTransfer.files);
+  });
+  document.getElementById('fileInput').addEventListener('change', e => handleFiles(e.target.files));
+
+  function handleFiles(fileList) {
+    for (const f of fileList) {
+      if (!f.type.startsWith('image/')) continue;
+      FILES.push(f);
+      renderQueue();
+    }
+    updateButtons();
+  }
+
+  function renderQueue() {
+    const q = document.getElementById('queue');
+    q.innerHTML = '';
+    FILES.forEach((f, i) => {
+      const div = document.createElement('div');
+      div.className = 'queue-item';
+      const url = URL.createObjectURL(f);
+      const res = RESULTS[i];
+      const statusHtml = res
+        ? `<span class="status-badge ${res.error ? 'error' : 'done'}">${res.error ? '✗' : '✓'}</span>`
+        : '';
+      div.innerHTML = `<img src="${url}"><button class="remove" onclick="removeFile(${i})">×</button>${statusHtml}`;
+      q.appendChild(div);
+    });
+  }
+
+  function removeFile(i) {
+    FILES.splice(i, 1);
+    RESULTS.splice(i, 1);
+    renderQueue();
+    rebuildTable();
+    updateButtons();
+  }
+
+  function clearAll() {
+    FILES.length = 0;
+    RESULTS.length = 0;
+    renderQueue();
+    rebuildTable();
+    updateButtons();
+  }
+
+  function updateButtons() {
+    const hasScannable = FILES.some((_, i) => !RESULTS[i]);
+    document.getElementById('btnScan').disabled = FILES.length === 0;
+    document.getElementById('btnCsv').disabled = RESULTS.filter(r => r && !r.error).length === 0;
+  }
+
+  const DELAY_MS = 4500; // 4.5 sek między zapytaniami — bezpieczny limit darmowego tier
+  const MAX_RETRIES = 4;
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // SCAN
+  async function scanAll() {
+    const backendUrl = (document.getElementById('backendUrl').value.trim() || localStorage.getItem('backend_url') || '').replace(/\/+$/, '');
+    if (!backendUrl) { showToast('Najpierw wpisz adres backendu!', 'error'); return; }
+
+    const toScan = FILES.map((f, i) => ({ f, i })).filter(({ i }) => !RESULTS[i]);
+    if (toScan.length === 0) { showToast('Wszystko już przeskanowane!', 'info'); return; }
+
+    document.getElementById('progressWrap').classList.add('visible');
+    document.getElementById('btnScan').disabled = true;
+
+    let done = 0;
+    for (const { f, i } of toScan) {
+      updateProgress(done / toScan.length * 100);
+      // Delay between requests (skip before first)
+      if (done > 0) {
+        showToast(`Czekam chwilę przed kolejnym zapytaniem… (${done}/${toScan.length})`, 'info');
+        await sleep(DELAY_MS);
+      }
+      try {
+        const b64 = await toBase64(f);
+        const result = await callBackend(backendUrl, b64, f.type);
+        RESULTS[i] = result;
+      } catch (e) {
+        RESULTS[i] = { error: e.message };
+        showToast(`Błąd: ${e.message}`, 'error');
+        // Show full error in debug panel
+        addDebugLog('ERROR', f.name, e.message, e.rawResponse || null);
+      }
+      done++;
+      renderQueue();
+      rebuildTable();
+    }
+
+    updateProgress(100);
+    setTimeout(() => document.getElementById('progressWrap').classList.remove('visible'), 800);
+    document.getElementById('btnScan').disabled = false;
+    updateButtons();
+    const ok = RESULTS.filter(r => r && !r.error).length;
+    showToast(`Gotowe! Przeskanowano ${ok} z ${toScan.length} raportów ✓`, 'success');
+  }
+
+  async function callBackend(backendUrl, b64, mimeType) {
+    const res = await fetch(`${backendUrl}/scan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: b64, mimeType })
+    });
+
+    const data = await res.json();
+    addDebugLog(res.ok ? 'RAW RESPONSE' : 'HTTP ERROR', `status: ${res.status}`, JSON.stringify(data, null, 2), null);
+
+    if (!res.ok) {
+      throw new Error(data.error || `HTTP ${res.status}`);
+    }
+    return data.data;
+  }
+
+  function updateProgress(pct) {
+    document.getElementById('progressFill').style.width = pct + '%';
+  }
+
+  function toBase64(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+
+  async function callGemini(key, b64, mime) {
+    const prompt = `You are analyzing a Top Girls mobile game battle report screenshot. Two players are shown: one labeled WIN and one labeled LOSE.
+
+CRITICAL RULES:
+- "win" suffix = data for the WIN player, "lose" suffix = data for the LOSE player
+- Large numbers directly below player avatars = sila (force/strength)
+- "Strata" row: left value = WIN side strata, right value = LOSE side strata
+- "Ranny" row: left = WIN ranny, right = LOSE ranny
+- "Pozostały" row: left = WIN pozostaly, right = LOSE pozostaly
+- "Całkowity Atrybut": left number = WIN side, right number = LOSE side
+- "Umiejętność" section: left column = WIN values, right column = LOSE values
+- "Aktywna Umiejętność" = extract only the NUMBER (e.g. 8700), NOT any label text
+- All % values include the % sign (e.g. "130%")
+- If field not visible use null
+
+Return ONLY valid JSON, no markdown fences, no explanation text:
+{
+  "wynik": "WIN or LOSE shown for the LEFT player",
+  "gracz_win": "WIN player name",
+  "poziom_win": number or null,
+  "gracz_lose": "LOSE player name",
+  "poziom_lose": number or null,
+  "sila_win": number,
+  "sila_lose": number,
+  "strata_win": number,
+  "strata_lose": number,
+  "ranny_win": number,
+  "ranny_lose": number,
+  "dolacz_win": number or null,
+  "dolacz_lose": number or null,
+  "opusc_win": number or null,
+  "opusc_lose": number or null,
+  "pozostaly_win": number,
+  "pozostaly_lose": number,
+  "spiewaj_win": number,
+  "spiewaj_lose": number,
+  "taniec_win": number,
+  "taniec_lose": number,
+  "aktywna_umiejetnosc_win": number or null,
+  "aktywna_umiejetnosc_lose": number or null,
+  "bonus_ataku_win": "string with %",
+  "bonus_ataku_lose": "string with %",
+  "zmniejsz_obrazenia_win": "string with %",
+  "zmniejsz_obrazenia_lose": "string with %",
+  "premie_umiejetnosci_win": "string with %",
+  "premie_umiejetnosci_lose": "string with %",
+  "zmniejszenie_umiejetnosci_win": "string with %",
+  "zmniejszenie_umiejetnosci_lose": "string with %",
+  "dodatkowe_obrazenia_win": number or null,
+  "dodatkowe_obrazenia_lose": number or null,
+  "income_change": "string like +70.57T or null"
+}`;
+
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`,
+        'HTTP-Referer': window.location.href,
+        'X-Title': 'Top Girls Skaner'
+      },
+      body: JSON.stringify({
+        model: currentModel,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            { type: 'image_url', image_url: { url: `data:${mime};base64,${b64}` } }
+          ]
+        }],
+        temperature: 0.1
+      })
+    });
+
+    if (!res.ok) {
+      let errBody = '';
+      try { errBody = JSON.stringify(await res.json()); } catch(e) { errBody = await res.text().catch(()=>''); }
+      addDebugLog('HTTP ERROR', `${res.status}`, errBody, null);
+      const parsed = JSON.parse(errBody || '{}');
+      const msg = parsed.error?.message || errBody || 'Nieznany błąd';
+      throw new Error(`${res.status}: ${msg}`);
+    }
+
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || '';
+    addDebugLog('RAW RESPONSE', `model: ${currentModel}`, text || '(pusta odpowiedź)', null);
+    if (!text || text.trim() === '') {
+      throw new Error('Model zwrócił pustą odpowiedź — spróbuj ponownie');
+    }
+    // Extract JSON — handle cases where model wraps it in markdown or adds text before/after
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      addDebugLog('PARSE ERROR', 'Brak JSON w odpowiedzi', text, null);
+      throw new Error('Brak JSON w odpowiedzi modelu');
+    }
+    try {
+      return JSON.parse(jsonMatch[0]);
+    } catch(parseErr) {
+      addDebugLog('PARSE ERROR', 'Nieprawidłowy JSON', jsonMatch[0], null);
+      throw new Error('Nie udało się sparsować JSON: ' + parseErr.message);
+    }
+  }
+
+  // TABLE
+  function rebuildTable() {
+    const tbody = document.getElementById('resultsBody');
+    const good = RESULTS.filter(r => r && !r.error);
+    document.getElementById('resultsCount').textContent = good.length;
+
+    if (good.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="37"><div class="empty-state"><div class="big-icon">📋</div><div>Brak wyników — wgraj screenshoty i kliknij Skanuj</div></div></td></tr>`;
+      updateButtons();
+      return;
+    }
+
+    tbody.innerHTML = '';
+    let rowNum = 1;
+    RESULTS.forEach((r, i) => {
+      if (!r || r.error) return;
+      const tr = document.createElement('tr');
+      const wynikBadge = r.wynik === 'WIN'
+        ? `<span class="win-badge">WIN</span>`
+        : `<span class="lose-badge">LOSE</span>`;
+      tr.innerHTML = `
+        <td>${rowNum++}</td>
+        <td style="color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis">${FILES[i]?.name || '—'}</td>
+        <td>${wynikBadge}</td>
+        <td style="color:var(--win)">${r.gracz_win ?? '—'}</td>
+        <td>${r.poziom_win ?? '—'}</td>
+        <td style="color:var(--lose)">${r.gracz_lose ?? '—'}</td>
+        <td>${r.poziom_lose ?? '—'}</td>
+        <td>${fmt(r.sila_win)}</td>
+        <td>${fmt(r.sila_lose)}</td>
+        <td style="color:var(--lose)">${fmt(r.strata_win)}</td>
+        <td style="color:var(--lose)">${fmt(r.strata_lose)}</td>
+        <td>${fmt(r.ranny_win)}</td>
+        <td>${fmt(r.ranny_lose)}</td>
+        <td style="color:var(--win)">${fmt(r.pozostaly_win)}</td>
+        <td style="color:var(--win)">${fmt(r.pozostaly_lose)}</td>
+        <td>${fmt(r.spiewaj_win)}</td>
+        <td>${fmt(r.spiewaj_lose)}</td>
+        <td>${fmt(r.taniec_win)}</td>
+        <td>${fmt(r.taniec_lose)}</td>
+        <td>${r.aktywna_umiejetnosc_win ?? '—'}</td>
+        <td>${r.aktywna_umiejetnosc_lose ?? '—'}</td>
+        <td>${r.bonus_ataku_win ?? '—'}</td>
+        <td>${r.bonus_ataku_lose ?? '—'}</td>
+        <td>${r.zmniejsz_obrazenia_win ?? '—'}</td>
+        <td>${r.zmniejsz_obrazenia_lose ?? '—'}</td>
+        <td>${r.premie_umiejetnosci_win ?? '—'}</td>
+        <td>${r.premie_umiejetnosci_lose ?? '—'}</td>
+        <td>${r.zmniejszenie_umiejetnosci_win ?? '—'}</td>
+        <td>${r.zmniejszenie_umiejetnosci_lose ?? '—'}</td>
+        <td>${r.dodatkowe_obrazenia_win ?? '—'}</td>
+        <td>${r.dodatkowe_obrazenia_lose ?? '—'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+    updateButtons();
+  }
+
+  function fmt(v) {
+    if (v === null || v === undefined) return '—';
+    if (typeof v === 'number') return v.toLocaleString('pl-PL');
+    return v;
+  }
+
+  // CSV EXPORT
+  function exportCSV() {
+    const headers = [
+      'Plik','Wynik','Gracz (Win)','Poziom Win','Gracz (Lose)','Poziom Lose',
+      'Siła Win','Siła Lose','Strata Win','Strata Lose','Dołącz Win','Dołącz Lose','Opuść Win','Opuść Lose',
+      'Ranny Win','Ranny Lose','Pozostały Win','Pozostały Lose',
+      'Śpiewaj Win','Śpiewaj Lose','Taniec Win','Taniec Lose',
+      'Aktywna Umiejętność Win','Aktywna Umiejętność Lose',
+      'Bonus Ataku Win','Bonus Ataku Lose',
+      'Zmniejsz Obrażenia Win','Zmniejsz Obrażenia Lose',
+      'Premie Umiejętności Win','Premie Umiejętności Lose',
+      'Zmniejszenie Umiejętności Win','Zmniejszenie Umiejętności Lose',
+      'Dodatkowe Obrażenia Win','Dodatkowe Obrażenia Lose','Income Change'
+    ];
+
+    const rows = RESULTS.map((r, i) => {
+      if (!r || r.error) return null;
+      return [
+        FILES[i]?.name ?? '',
+        r.wynik, r.gracz_win, r.poziom_win, r.gracz_lose, r.poziom_lose,
+        r.sila_win, r.sila_lose, r.strata_win, r.strata_lose,
+        r.ranny_win, r.ranny_lose, r.pozostaly_win, r.pozostaly_lose, r.dolacz_win, r.dolacz_lose, r.opusc_win, r.opusc_lose,
+        r.spiewaj_win, r.spiewaj_lose, r.taniec_win, r.taniec_lose,
+        r.aktywna_umiejetnosc_win, r.aktywna_umiejetnosc_lose,
+        r.bonus_ataku_win, r.bonus_ataku_lose,
+        r.zmniejsz_obrazenia_win, r.zmniejsz_obrazenia_lose,
+        r.premie_umiejetnosci_win, r.premie_umiejetnosci_lose,
+        r.zmniejszenie_umiejetnosci_win, r.zmniejszenie_umiejetnosci_lose,
+        r.dodatkowe_obrazenia_win, r.dodatkowe_obrazenia_lose, r.income_change
+      ].map(v => v === null || v === undefined ? '' : String(v));
+    }).filter(Boolean);
+
+    const csv = [headers, ...rows].map(row =>
+      row.map(v => `"${v.replace(/"/g, '""')}"`).join(';')
+    ).join('\n');
+
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `top_girls_raporty_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('CSV pobrany ✓', 'success');
+  }
+
+  // DEBUG LOG
+  function addDebugLog(type, label, message, raw) {
+    const el = document.getElementById('debugLog');
+    if (!el) return;
+    const time = new Date().toLocaleTimeString('pl-PL');
+    const color = type.includes('ERROR') ? '#ff6b6b' : type === 'RAW RESPONSE' ? '#6bffb8' : '#ffd96b';
+    el.innerHTML += `<span style="color:${color}">[${time}] [${type}] ${label}</span>\n${message}\n${'─'.repeat(60)}\n`;
+    el.scrollTop = el.scrollHeight;
+    // Clear placeholder
+    if (el.innerHTML.includes('Brak logów')) el.innerHTML = el.innerHTML.replace('Brak logów — prześlij zdjęcie żeby zobaczyć odpowiedź API...', '');
+  }
+
+  // TOAST
+  let toastTimer;
+  function showToast(msg, type = 'info') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>
